@@ -624,20 +624,23 @@ namespace KeyboardRedirector
                                 dInfo.DeviceName = deviceName;
                                 dInfo.RawInputDeviceInfo = deviceInfo;
 
-                                // Check the Registry to see whether this is actually a 
-                                // keyboard, and to retrieve a more friendly description.
-                                bool IsKeyboardDevice = false;
-                                dInfo.DeviceDesc = ReadReg(deviceName, ref IsKeyboardDevice);
-                                dInfo.Name = dInfo.DeviceDesc.Substring(dInfo.DeviceDesc.LastIndexOf(";") + 1);
-
-                                // If it is a keyboard and it isn't already in the list,
-                                // add it to the deviceList hashtable and increase the
-                                // NumberOfDevices count
-                                //if (!deviceList.Contains(hDevice) && IsKeyboardDevice)
-                                if (!_deviceList.ContainsKey(hDevice))
+                                if (deviceName.Contains("#"))
                                 {
-                                    NumberOfDevices++;
-                                    _deviceList.Add(hDevice, dInfo);
+                                    // Check the Registry to see whether this is actually a 
+                                    // keyboard, and to retrieve a more friendly description.
+                                    bool IsKeyboardDevice = false;
+                                    dInfo.DeviceDesc = ReadReg(deviceName, ref IsKeyboardDevice);
+                                    dInfo.Name = dInfo.DeviceDesc.Substring(dInfo.DeviceDesc.LastIndexOf(";") + 1);
+
+                                    // If it is a keyboard and it isn't already in the list,
+                                    // add it to the deviceList hashtable and increase the
+                                    // NumberOfDevices count
+                                    //if (!deviceList.Contains(hDevice) && IsKeyboardDevice)
+                                    if (!_deviceList.ContainsKey(hDevice))
+                                    {
+                                        NumberOfDevices++;
+                                        _deviceList.Add(hDevice, dInfo);
+                                    } 
                                 }
                             }
                         }
