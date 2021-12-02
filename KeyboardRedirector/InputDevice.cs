@@ -45,22 +45,22 @@ namespace KeyboardRedirector
 
         // The following constants are defined in Windows.h
 
-        private const int RIDEV_APPKEYS     = 0x00000400;
-        private const int RIDEV_INPUTSINK   = 0x00000100;
-        private const int RIDEV_NOLEGACY    = 0x00000030;
-        private const int RIDEV_PAGEONLY    = 0x00000020;
-        private const int RID_INPUT         = 0x10000003;
+        private const int RIDEV_APPKEYS = 0x00000400;
+        private const int RIDEV_INPUTSINK = 0x00000100;
+        private const int RIDEV_NOLEGACY = 0x00000030;
+        private const int RIDEV_PAGEONLY = 0x00000020;
+        private const int RID_INPUT = 0x10000003;
 
-        private const int FAPPCOMMAND_MASK  = 0xF000;
+        private const int FAPPCOMMAND_MASK = 0xF000;
         private const int FAPPCOMMAND_MOUSE = 0x8000;
-        private const int FAPPCOMMAND_OEM   = 0x1000;
+        private const int FAPPCOMMAND_OEM = 0x1000;
 
-        private const int RIDI_DEVICENAME   = 0x20000007;
-        private const int RIDI_DEVICEINFO   = 0x2000000B;
-        
-        private const int VK_OEM_CLEAR      = 0xFE;
-        private const int VK_LAST_KEY       = VK_OEM_CLEAR; // this is a made up value used as a sentinel
-       
+        private const int RIDI_DEVICENAME = 0x20000007;
+        private const int RIDI_DEVICEINFO = 0x2000000B;
+
+        private const int VK_OEM_CLEAR = 0xFE;
+        private const int VK_LAST_KEY = VK_OEM_CLEAR; // this is a made up value used as a sentinel
+
         #endregion const definitions
 
         #region structs & enums
@@ -106,7 +106,7 @@ namespace KeyboardRedirector
         }
 
         #region Windows.h structure declarations
-        
+
         // The following structures are defined in Windows.h
 
         [StructLayout(LayoutKind.Sequential)]
@@ -181,20 +181,22 @@ namespace KeyboardRedirector
         public struct RAWMOUSE
         {
             [MarshalAs(UnmanagedType.U2)]
-            [FieldOffset(0)] 
+            [FieldOffset(0)]
             public ushort usFlags;
             [MarshalAs(UnmanagedType.U4)]
-            [FieldOffset(4)] 
-            public uint ulButtons; 
-            [FieldOffset(4)] 
+            [FieldOffset(4)]
+            public uint ulButtons;
+            [FieldOffset(4)]
             public BUTTONSSTR buttonsStr;
-            [MarshalAs(UnmanagedType.U4)][FieldOffset(8)] 
+            [MarshalAs(UnmanagedType.U4)]
+            [FieldOffset(8)]
             public uint ulRawButtons;
             [FieldOffset(12)]
             public int lLastX;
             [FieldOffset(16)]
             public int lLastY;
-            [MarshalAs(UnmanagedType.U4)][FieldOffset(20)]
+            [MarshalAs(UnmanagedType.U4)]
+            [FieldOffset(20)]
             public uint ulExtraInformation;
         }
 
@@ -282,15 +284,15 @@ namespace KeyboardRedirector
 
 
         #endregion structs & enums
-        
+
         #region DllImports
-        
+
         [DllImport("User32.dll")]
         extern static uint GetRawInputDeviceList(IntPtr pRawInputDeviceList, ref uint uiNumDevices, uint cbSize);
-        
+
         [DllImport("User32.dll")]
         extern static uint GetRawInputDeviceInfo(IntPtr hDevice, uint uiCommand, IntPtr pData, ref uint pcbSize);
-        
+
         [DllImport("User32.dll")]
         extern static bool RegisterRawInputDevices(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
 
@@ -303,7 +305,7 @@ namespace KeyboardRedirector
         #endregion DllImports
 
         #region Variables and event handling
-        
+
         /// <summary>
         /// List of keyboard devices. Key: the device handle
         /// Value: the device info class
@@ -343,15 +345,15 @@ namespace KeyboardRedirector
         /// </summary>
         public class KeyControlEventArgs : EventArgs
         {
-            private DeviceInfo  m_deviceInfo;
-            private DeviceType  m_device;
-           
-            public KeyControlEventArgs( DeviceInfo dInfo, DeviceType device )
+            private DeviceInfo m_deviceInfo;
+            private DeviceType m_device;
+
+            public KeyControlEventArgs(DeviceInfo dInfo, DeviceType device)
             {
                 m_deviceInfo = dInfo;
                 m_device = device;
             }
-            
+
             public KeyControlEventArgs()
             {
             }
@@ -378,7 +380,7 @@ namespace KeyboardRedirector
         /// for the calling window.
         /// </summary>
         /// <param name="hwnd">Handle of the window listening for key presses</param>
-        public InputDevice( IntPtr hwnd )
+        public InputDevice(IntPtr hwnd)
         {
             //Create an array of all the raw input devices we want to 
             //listen to. In this case, only keyboard devices.
@@ -420,17 +422,17 @@ namespace KeyboardRedirector
             }
 
             var ridArray = rids.ToArray();
-            if (!RegisterRawInputDevices(ridArray, (uint)rids.Count, (uint)Marshal.SizeOf(ridArray[0])))
+            if (ridArray.Length > 0 && !RegisterRawInputDevices(ridArray, (uint)rids.Count, (uint)Marshal.SizeOf(ridArray[0])))
             {
                 string errorMessage = new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error()).Message;
-                throw new ApplicationException( "Failed to register raw input device(s)." );
+                throw new ApplicationException("Failed to register raw input device(s).");
             }
         }
 
         #endregion InputDevice( IntPtr hwnd )
 
         #region ReadReg( string item, ref bool isKeyboard )
-        
+
         /// <summary>
         /// Reads the Registry to retrieve a friendly description
         /// of the device, and determine whether it is a keyboard.
@@ -438,7 +440,7 @@ namespace KeyboardRedirector
         /// <param name="item">The device name to search for, as provided by GetRawInputDeviceInfo.</param>
         /// <param name="isKeyboard">Determines whether the device's class is "Keyboard".</param>
         /// <returns>The device description stored in the Registry entry's DeviceDesc value.</returns>
-        private string ReadReg( string item, ref bool isKeyboard )
+        private string ReadReg(string item, ref bool isKeyboard)
         {
             RegistryKey key = null;
             int retryCount = 0;
@@ -624,24 +626,28 @@ namespace KeyboardRedirector
                                 dInfo.DeviceName = deviceName;
                                 dInfo.RawInputDeviceInfo = deviceInfo;
 
-                                if (deviceName.Contains("#"))
-                                {
-                                    // Check the Registry to see whether this is actually a 
-                                    // keyboard, and to retrieve a more friendly description.
-                                    bool IsKeyboardDevice = false;
-                                    dInfo.DeviceDesc = ReadReg(deviceName, ref IsKeyboardDevice);
-                                    dInfo.Name = dInfo.DeviceDesc.Substring(dInfo.DeviceDesc.LastIndexOf(";") + 1);
+                                //if (deviceName.Contains("#"))
+                                //{
+                                //    // Check the Registry to see whether this is actually a 
+                                //    // keyboard, and to retrieve a more friendly description.
+                                //    bool IsKeyboardDevice = false;
 
-                                    // If it is a keyboard and it isn't already in the list,
-                                    // add it to the deviceList hashtable and increase the
-                                    // NumberOfDevices count
-                                    //if (!deviceList.Contains(hDevice) && IsKeyboardDevice)
-                                    if (!_deviceList.ContainsKey(hDevice))
-                                    {
-                                        NumberOfDevices++;
-                                        _deviceList.Add(hDevice, dInfo);
-                                    } 
-                                }
+                                //    if (IsKeyboardDevice)
+                                //    {
+                                //dInfo.DeviceDesc = ReadReg(deviceName, ref IsKeyboardDevice);
+                                //dInfo.Name = dInfo.DeviceDesc.Substring(dInfo.DeviceDesc.LastIndexOf(";") + 1);
+
+                                // If it is a keyboard and it isn't already in the list,
+                                // add it to the deviceList hashtable and increase the
+                                // NumberOfDevices count
+                                //if (!deviceList.Contains(hDevice) && IsKeyboardDevice)
+                                //if (!_deviceList.ContainsKey(hDevice))
+                                //{
+                                NumberOfDevices++;
+                                _deviceList.Add(hDevice, dInfo);
+                                //}
+                                //    }
+                                //}
                             }
                         }
                     }
@@ -662,7 +668,7 @@ namespace KeyboardRedirector
         #endregion EnumerateDevices()
 
         #region ProcessInputCommand( Message message )
-        
+
         /// <summary>
         /// Processes WM_INPUT messages to retrieve information about any
         /// keyboard events that occur.
@@ -677,15 +683,15 @@ namespace KeyboardRedirector
             // First call to GetRawInputData sets the value of dwSize,
             // which can then be used to allocate the appropriate amount of memory,
             // storing the pointer in "buffer".
-            GetRawInputData( message_LParam, 
-                             RID_INPUT, IntPtr.Zero, 
-                             ref dwSize, 
-                             (uint)Marshal.SizeOf( typeof( RAWINPUTHEADER )));
+            GetRawInputData(message_LParam,
+                             RID_INPUT, IntPtr.Zero,
+                             ref dwSize,
+                             (uint)Marshal.SizeOf(typeof(RAWINPUTHEADER)));
 
             if (dwSize == 0)
                 throw new Exception("GetRawInputData returned 0");
 
-            IntPtr buffer = Marshal.AllocHGlobal( (int)dwSize );
+            IntPtr buffer = Marshal.AllocHGlobal((int)dwSize);
             try
             {
                 // Check that buffer points to something
@@ -839,7 +845,7 @@ namespace KeyboardRedirector
             }
             finally
             {
-                Marshal.FreeHGlobal( buffer );
+                Marshal.FreeHGlobal(buffer);
             }
         }
 
@@ -852,7 +858,7 @@ namespace KeyboardRedirector
             int i = 0;
             foreach (byte b in bytes)
             {
-                if ((i == 4) || (i == 8)|| (i == 12) || (i == 16))
+                if ((i == 4) || (i == 8) || (i == 12) || (i == 16))
                     result.Append(" ");
                 if ((i == 16))
                     result.Append(" ");
@@ -882,7 +888,7 @@ namespace KeyboardRedirector
         {
             DeviceType deviceType;
 
-            switch( (int)(((ushort)(param >> 16)) & FAPPCOMMAND_MASK ))
+            switch ((int)(((ushort)(param >> 16)) & FAPPCOMMAND_MASK))
             {
                 case FAPPCOMMAND_OEM:
                     deviceType = DeviceType.HID;
@@ -916,12 +922,12 @@ namespace KeyboardRedirector
         /// ProcessInputCommand if necessary.
         /// </summary>
         /// <param name="message">The Windows message.</param>
-        public void ProcessMessage( Message message )
-		{
+        public void ProcessMessage(Message message)
+        {
             if (IsInputMessage(message))
-	        {
-	            ProcessInputCommand( message.LParam );
-	        }
+            {
+                ProcessInputCommand(message.LParam);
+            }
         }
         public void ProcessMessage(Win32.MSG message)
         {
